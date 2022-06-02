@@ -1,0 +1,4 @@
+[submodule "external/DCNv2"]
+	path = external/DCNv2
+	url = git@github.com:lbin/DCNv2.git
+	branch = pytorch_1.9
