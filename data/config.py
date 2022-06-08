@@ -1,18 +1,20 @@
-from backbone import ResNetBackbone, VGGBackbone, ResNetBackboneGN, DarkNetBackbone
 from math import sqrt
+
 import torch
+from backbone import (DarkNetBackbone, ResNetBackbone, ResNetBackboneGN,
+                      VGGBackbone)
 
 # for making bounding boxes pretty
 COLORS = ((244,  67,  54),
           (233,  30,  99),
           (156,  39, 176),
           (103,  58, 183),
-          ( 63,  81, 181),
-          ( 33, 150, 243),
-          (  3, 169, 244),
-          (  0, 188, 212),
-          (  0, 150, 136),
-          ( 76, 175,  80),
+          (63,  81, 181),
+          (33, 150, 243),
+          (3, 169, 244),
+          (0, 188, 212),
+          (0, 150, 136),
+          (76, 175,  80),
           (139, 195,  74),
           (205, 220,  57),
           (255, 235,  59),
@@ -21,12 +23,12 @@ COLORS = ((244,  67,  54),
           (255,  87,  34),
           (121,  85,  72),
           (158, 158, 158),
-          ( 96, 125, 139))
+          (96, 125, 139))
 
 
 # These are in BGR and are for ImageNet
 MEANS = (103.94, 116.78, 123.68)
-STD   = (57.38, 57.12, 58.40)
+STD = (57.38, 57.12, 58.40)
 
 COCO_CLASSES = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
                 'train', 'truck', 'boat', 'traffic light', 'fire hydrant',
@@ -43,8 +45,8 @@ COCO_CLASSES = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
                 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase',
                 'scissors', 'teddy bear', 'hair drier', 'toothbrush')
 
-COCO_LABEL_MAP = { 1:  1,  2:  2,  3:  3,  4:  4,  5:  5,  6:  6,  7:  7,  8:  8,
-                   9:  9, 10: 10, 11: 11, 13: 12, 14: 13, 15: 14, 16: 15, 17: 16,
+COCO_LABEL_MAP = {1:  1,  2:  2,  3:  3,  4:  4,  5:  5,  6:  6,  7:  7,  8:  8,
+                  9:  9, 10: 10, 11: 11, 13: 12, 14: 13, 15: 14, 16: 15, 17: 16,
                   18: 17, 19: 18, 20: 19, 21: 20, 22: 21, 23: 22, 24: 23, 25: 24,
                   27: 25, 28: 26, 31: 27, 32: 28, 33: 29, 34: 30, 35: 31, 36: 32,
                   37: 33, 38: 34, 39: 35, 40: 36, 41: 37, 42: 38, 43: 39, 44: 40,
@@ -53,7 +55,6 @@ COCO_LABEL_MAP = { 1:  1,  2:  2,  3:  3,  4:  4,  5:  5,  6:  6,  7:  7,  8:  8
                   62: 57, 63: 58, 64: 59, 65: 60, 67: 61, 70: 62, 72: 63, 73: 64,
                   74: 65, 75: 66, 76: 67, 77: 68, 78: 69, 79: 70, 80: 71, 81: 72,
                   82: 73, 84: 74, 85: 75, 86: 76, 87: 77, 88: 78, 89: 79, 90: 80}
-
 
 
 # ----------------------- CONFIG CLASS ----------------------- #
@@ -78,7 +79,7 @@ class Config(object):
         """
 
         ret = Config(vars(self))
-        
+
         for key, val in new_config_dict.items():
             ret.__setattr__(key, val)
 
@@ -94,17 +95,13 @@ class Config(object):
 
         for key, val in new_config_dict.items():
             self.__setattr__(key, val)
-    
+
     def print(self):
         for k, v in vars(self).items():
             print(k, ' = ', v)
 
 
-
-
-
 # ----------------------- DATASETS ----------------------- #
-
 dataset_base = Config({
     'name': 'Base Dataset',
 
@@ -130,7 +127,7 @@ dataset_base = Config({
 
 coco2014_dataset = dataset_base.copy({
     'name': 'COCO 2014',
-    
+
     'train_info': './data/coco/annotations/instances_train2014.json',
     'valid_info': './data/coco/annotations/instances_val2014.json',
 
@@ -139,7 +136,7 @@ coco2014_dataset = dataset_base.copy({
 
 coco2017_dataset = dataset_base.copy({
     'name': 'COCO 2017',
-    
+
     'train_info': './data/coco/annotations/instances_train2017.json',
     'valid_info': './data/coco/annotations/instances_val2017.json',
 
@@ -165,15 +162,25 @@ pascal_sbd_dataset = dataset_base.copy({
 
     'train_images': './data/sbd/img',
     'valid_images': './data/sbd/img',
-    
+
     'train_info': './data/sbd/pascal_sbd_train.json',
     'valid_info': './data/sbd/pascal_sbd_val.json',
 
     'class_names': PASCAL_CLASSES,
 })
 
+my_custom_dataset = dataset_base.copy({
+    'name': 'Chips Dataset',
 
+    'train_images': './data/coco_train_chips1',
+    'train_info':   './data/coco_train_chips1/annotations.json',
 
+    'valid_images': './data/coco_train_chips2',
+    'valid_info':   './data/coco_train_chips2/annotations.json',
+
+    'has_gt': True,
+    'class_names': ('chips')
+})
 
 
 # ----------------------- TRANSFORMS ----------------------- #
@@ -200,9 +207,6 @@ darknet_transform = Config({
     'subtract_means': False,
     'to_float': True,
 })
-
-
-
 
 
 # ----------------------- BACKBONES ----------------------- #
@@ -232,7 +236,7 @@ resnet101_backbone = backbone_base.copy({
 
     'selected_layers': list(range(2, 8)),
     'pred_scales': [[1]]*6,
-    'pred_aspect_ratios': [ [[0.66685089, 1.7073535, 0.87508774, 1.16524493, 0.49059086]] ] * 6,
+    'pred_aspect_ratios': [[[0.66685089, 1.7073535, 0.87508774, 1.16524493, 0.49059086]]] * 6,
 })
 
 resnet101_gn_backbone = backbone_base.copy({
@@ -244,7 +248,7 @@ resnet101_gn_backbone = backbone_base.copy({
 
     'selected_layers': list(range(2, 8)),
     'pred_scales': [[1]]*6,
-    'pred_aspect_ratios': [ [[0.66685089, 1.7073535, 0.87508774, 1.16524493, 0.49059086]] ] * 6,
+    'pred_aspect_ratios': [[[0.66685089, 1.7073535, 0.87508774, 1.16524493, 0.49059086]]] * 6,
 })
 
 resnet101_dcn_inter3_backbone = resnet101_backbone.copy({
@@ -274,14 +278,15 @@ darknet53_backbone = backbone_base.copy({
 
     'selected_layers': list(range(3, 9)),
     'pred_scales': [[3.5, 4.95], [3.6, 4.90], [3.3, 4.02], [2.7, 3.10], [2.1, 2.37], [1.8, 1.92]],
-    'pred_aspect_ratios': [ [[1, sqrt(2), 1/sqrt(2), sqrt(3), 1/sqrt(3)][:n], [1]] for n in [3, 5, 5, 5, 3, 3] ],
+    'pred_aspect_ratios': [[[1, sqrt(2), 1/sqrt(2), sqrt(3), 1/sqrt(3)][:n], [1]] for n in [3, 5, 5, 5, 3, 3]],
 })
 
 vgg16_arch = [[64, 64],
-              [ 'M', 128, 128],
-              [ 'M', 256, 256, 256],
-              [('M', {'kernel_size': 2, 'stride': 2, 'ceil_mode': True}), 512, 512, 512],
-              [ 'M', 512, 512, 512],
+              ['M', 128, 128],
+              ['M', 256, 256, 256],
+              [('M', {'kernel_size': 2, 'stride': 2,
+                'ceil_mode': True}), 512, 512, 512],
+              ['M', 512, 512, 512],
               [('M',  {'kernel_size': 3, 'stride':  1, 'padding':  1}),
                (1024, {'kernel_size': 3, 'padding': 6, 'dilation': 6}),
                (1024, {'kernel_size': 1})]]
@@ -295,11 +300,8 @@ vgg16_backbone = backbone_base.copy({
 
     'selected_layers': [3] + list(range(5, 10)),
     'pred_scales': [[5, 4]]*6,
-    'pred_aspect_ratios': [ [[1], [1, sqrt(2), 1/sqrt(2), sqrt(3), 1/sqrt(3)][:n]] for n in [3, 5, 5, 5, 3, 3] ],
+    'pred_aspect_ratios': [[[1], [1, sqrt(2), 1/sqrt(2), sqrt(3), 1/sqrt(3)][:n]] for n in [3, 5, 5, 5, 3, 3]],
 })
-
-
-
 
 
 # ----------------------- MASK BRANCH TYPES ----------------------- #
@@ -365,21 +367,15 @@ mask_type = Config({
 })
 
 
-
-
-
 # ----------------------- ACTIVATION FUNCTIONS ----------------------- #
 
 activation_func = Config({
     'tanh':    torch.tanh,
     'sigmoid': torch.sigmoid,
     'softmax': lambda x: torch.nn.functional.softmax(x, dim=-1),
-    'relu':    lambda x: torch.nn.functional.relu(x, inplace=True),
-    'none':    lambda x: x,
+    'relu': lambda x: torch.nn.functional.relu(x, inplace=True),
+    'none': lambda x: x,
 })
-
-
-
 
 
 # ----------------------- FPN DEFAULTS ----------------------- #
@@ -409,14 +405,11 @@ fpn_base = Config({
 })
 
 
-
-
-
 # ----------------------- CONFIG DEFAULTS ----------------------- #
 
 coco_base_config = Config({
     'dataset': coco2014_dataset,
-    'num_classes': 81, # This should include the background class
+    'num_classes': 81,  # This should include the background class
 
     'max_iter': 400000,
 
@@ -441,7 +434,8 @@ coco_base_config = Config({
     # The terms to scale the respective loss by
     'conf_alpha': 1,
     'bbox_alpha': 1.5,
-    'mask_alpha': 0.4 / 256 * 140 * 140, # Some funky equation. Don't worry about it.
+    # Some funky equation. Don't worry about it.
+    'mask_alpha': 0.4 / 256 * 140 * 140,
 
     # Eval.py sets this if you just want to run YOLACT as a detector
     'eval_mask_branch': True,
@@ -520,7 +514,7 @@ coco_base_config = Config({
     'use_focal_loss': False,
     'focal_loss_alpha': 0.25,
     'focal_loss_gamma': 2,
-    
+
     # The initial bias toward forground objects, as specified in the focal loss paper
     'focal_loss_init_pi': 0.01,
 
@@ -582,7 +576,7 @@ coco_base_config = Config({
 
     # Input image size.
     'max_size': 300,
-    
+
     # Whether or not to do post processing on the cpu at test time
     'force_cpu_nms': True,
 
@@ -612,7 +606,7 @@ coco_base_config = Config({
 
     # Whether or not to use the predicted coordinate scheme from Yolo v2
     'use_yolo_regressors': False,
-    
+
     # For training, bboxes are considered "positive" if their anchors have a 0.5 IoU overlap
     # or greater with a ground truth box. If this is true, instead of using the anchor boxes
     # for this IoU computation, the matching function will use the predicted bbox coordinates.
@@ -634,7 +628,7 @@ coco_base_config = Config({
     # Do not crop out the mask with bbox but slide a convnet on the image-size mask,
     # then use global pooling to get the final mask score
     'use_maskiou': False,
-    
+
     # Archecture for the mask iou network. A (num_classes-1, 1, {}) layer is appended to the end.
     'maskiou_net': [],
 
@@ -648,33 +642,32 @@ coco_base_config = Config({
 })
 
 
-
-
-
 # ----------------------- YOLACT v1.0 CONFIGS ----------------------- #
 
 yolact_base_config = coco_base_config.copy({
     'name': 'yolact_base',
 
     # Dataset stuff
-    'dataset': coco2017_dataset,
-    'num_classes': len(coco2017_dataset.class_names) + 1,
+    # 'dataset': coco2017_dataset,
+    # 'num_classes': len(coco2017_dataset.class_names) + 1,
+    'dataset': my_custom_dataset,
+    'num_classes': len(my_custom_dataset.class_names) + 1,
 
     # Image Size
     'max_size': 550,
-    
+
     # Training params
     'lr_steps': (280000, 600000, 700000, 750000),
     'max_iter': 800000,
-    
+
     # Backbone Settings
     'backbone': resnet101_backbone.copy({
         'selected_layers': list(range(1, 4)),
         'use_pixel_scales': True,
         'preapply_sqrt': False,
-        'use_square_anchors': True, # This is for backward compatability with a bug
+        'use_square_anchors': True,  # This is for backward compatability with a bug
 
-        'pred_aspect_ratios': [ [[1, 1/2, 2]] ]*5,
+        'pred_aspect_ratios': [[[1, 1/2, 2]]]*5,
         'pred_scales': [[24], [48], [96], [192], [384]],
     }),
 
@@ -727,12 +720,12 @@ yolact_darknet53_config = yolact_base_config.copy({
 
     'backbone': darknet53_backbone.copy({
         'selected_layers': list(range(2, 5)),
-        
+
         'pred_scales': yolact_base_config.backbone.pred_scales,
         'pred_aspect_ratios': yolact_base_config.backbone.pred_aspect_ratios,
         'use_pixel_scales': True,
         'preapply_sqrt': False,
-        'use_square_anchors': True, # This is for backward compatability with a bug
+        'use_square_anchors': True,  # This is for backward compatability with a bug
     }),
 })
 
@@ -741,26 +734,26 @@ yolact_resnet50_config = yolact_base_config.copy({
 
     'backbone': resnet50_backbone.copy({
         'selected_layers': list(range(1, 4)),
-        
+
         'pred_scales': yolact_base_config.backbone.pred_scales,
         'pred_aspect_ratios': yolact_base_config.backbone.pred_aspect_ratios,
         'use_pixel_scales': True,
         'preapply_sqrt': False,
-        'use_square_anchors': True, # This is for backward compatability with a bug
+        'use_square_anchors': True,  # This is for backward compatability with a bug
     }),
 })
 
 
 yolact_resnet50_pascal_config = yolact_resnet50_config.copy({
-    'name': None, # Will default to yolact_resnet50_pascal
-    
+    'name': None,  # Will default to yolact_resnet50_pascal
+
     # Dataset stuff
     'dataset': pascal_sbd_dataset,
     'num_classes': len(pascal_sbd_dataset.class_names) + 1,
 
     'max_iter': 120000,
     'lr_steps': (60000, 100000),
-    
+
     'backbone': yolact_resnet50_config.backbone.copy({
         'pred_scales': [[32], [64], [128], [256], [512]],
         'use_square_anchors': False,
@@ -774,8 +767,8 @@ yolact_plus_base_config = yolact_base_config.copy({
 
     'backbone': resnet101_dcn_inter3_backbone.copy({
         'selected_layers': list(range(1, 4)),
-        
-        'pred_aspect_ratios': [ [[1, 1/2, 2]] ]*5,
+
+        'pred_aspect_ratios': [[[1, 1/2, 2]]]*5,
         'pred_scales': [[i * 2 ** (j / 3.0) for j in range(3)] for i in [24, 48, 96, 192, 384]],
         'use_pixel_scales': True,
         'preapply_sqrt': False,
@@ -796,8 +789,8 @@ yolact_plus_resnet50_config = yolact_plus_base_config.copy({
 
     'backbone': resnet50_dcnv2_backbone.copy({
         'selected_layers': list(range(1, 4)),
-        
-        'pred_aspect_ratios': [ [[1, 1/2, 2]] ]*5,
+
+        'pred_aspect_ratios': [[[1, 1/2, 2]]]*5,
         'pred_scales': [[i * 2 ** (j / 3.0) for j in range(3)] for i in [24, 48, 96, 192, 384]],
         'use_pixel_scales': True,
         'preapply_sqrt': False,
@@ -809,7 +802,8 @@ yolact_plus_resnet50_config = yolact_plus_base_config.copy({
 # Default config
 cfg = yolact_base_config.copy()
 
-def set_cfg(config_name:str):
+
+def set_cfg(config_name: str):
     """ Sets the active config. Works even if cfg is already imported! """
     global cfg
 
@@ -820,7 +814,447 @@ def set_cfg(config_name:str):
     if cfg.name is None:
         cfg.name = config_name.split('_config')[0]
 
-def set_dataset(dataset_name:str):
+
+def set_dataset(dataset_name: str):
     """ Sets the dataset of the current config. """
     cfg.dataset = eval(dataset_name)
-    
+
+
+# -----start robocup_dataset-----
+robocup_dataset_CLASSES = ('a',
+'b',
+'c',
+'l',
+'o',
+'p',
+'s',
+'t',
+'w',
+)
+robocup_dataset_dataset = dataset_base.copy({
+                'name': 'robocup_dataset dataset',
+
+                # Training images and annotations
+                'train_images': './custom_dataset/robocup_dataset/',
+                'train_info':   './custom_dataset/robocup_dataset/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './custom_dataset/robocup_dataset/',
+                'valid_info':   './custom_dataset/robocup_dataset/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': robocup_dataset_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_robocup_dataset_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_robocup_dataset',
+
+                # Dataset stuff
+                'dataset': robocup_dataset_dataset,
+                'num_classes': len(robocup_dataset_dataset.class_names) + 1,
+            })
+# -----end robocup_dataset-----
+# -----start robocup_apple_test-----
+robocup_apple_test_CLASSES = ()
+robocup_apple_test_dataset = dataset_base.copy({
+                'name': 'robocup_apple_test dataset',
+
+                # Training images and annotations
+                'train_images': './robocup_apple_test/',
+                'train_info':   './robocup_apple_test/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './robocup_apple_test/',
+                'valid_info':   './robocup_apple_test/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': robocup_apple_test_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_robocup_apple_test_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_robocup_apple_test',
+
+                # Dataset stuff
+                'dataset': robocup_apple_test_dataset,
+                'num_classes': len(robocup_apple_test_dataset.class_names) + 1,
+            })
+# -----end robocup_apple_test-----
+# -----start robotest-----
+robotest_CLASSES = ('apple',
+)
+robotest_dataset = dataset_base.copy({
+                'name': 'robotest dataset',
+
+                # Training images and annotations
+                'train_images': './robotest/',
+                'train_info':   './robotest/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './robotest/',
+                'valid_info':   './robotest/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': robotest_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_robotest_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_robotest',
+
+                # Dataset stuff
+                'dataset': robotest_dataset,
+                'num_classes': len(robotest_dataset.class_names) + 1,
+            })
+# -----end robotest-----
+# -----start robotes1t-----
+robotes1t_CLASSES = ('apple',
+)
+robotes1t_dataset = dataset_base.copy({
+                'name': 'robotes1t dataset',
+
+                # Training images and annotations
+                'train_images': './custom_dataset/robotes1t/',
+                'train_info':   './custom_dataset/robotes1t/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './custom_dataset/robotes1t/',
+                'valid_info':   './custom_dataset/robotes1t/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': robotes1t_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_robotes1t_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_robotes1t',
+
+                # Dataset stuff
+                'dataset': robotes1t_dataset,
+                'num_classes': len(robotes1t_dataset.class_names) + 1,
+            })
+# -----end robotes1t-----
+# -----start robocup_apple_test2-----
+robocup_apple_test2_CLASSES = ('apple',
+'banana',
+'lemon',
+)
+robocup_apple_test2_dataset = dataset_base.copy({
+                'name': 'robocup_apple_test2 dataset',
+
+                # Training images and annotations
+                'train_images': './custom_dataset/robocup_apple_test2/',
+                'train_info':   './custom_dataset/robocup_apple_test2/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './custom_dataset/robocup_apple_test2/',
+                'valid_info':   './custom_dataset/robocup_apple_test2/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': robocup_apple_test2_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_robocup_apple_test2_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_robocup_apple_test2',
+
+                # Dataset stuff
+                'dataset': robocup_apple_test2_dataset,
+                'num_classes': len(robocup_apple_test2_dataset.class_names) + 1,
+            })
+# -----end robocup_apple_test2-----
+# -----start robocup_apple_test3-----
+robocup_apple_test3_CLASSES = ('apple',
+'banana',
+'lemon',
+)
+robocup_apple_test3_dataset = dataset_base.copy({
+                'name': 'robocup_apple_test3 dataset',
+
+                # Training images and annotations
+                'train_images': './custom_dataset/robocup_apple_test3/',
+                'train_info':   './custom_dataset/robocup_apple_test3/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './custom_dataset/robocup_apple_test3/',
+                'valid_info':   './custom_dataset/robocup_apple_test3/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': robocup_apple_test3_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_robocup_apple_test3_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_robocup_apple_test3',
+
+                # Dataset stuff
+                'dataset': robocup_apple_test3_dataset,
+                'num_classes': len(robocup_apple_test3_dataset.class_names) + 1,
+            })
+# -----end robocup_apple_test3-----
+# -----start robocup_apple_test5-----
+robocup_apple_test5_CLASSES = ('apple',
+'banana',
+'lemon',
+)
+robocup_apple_test5_dataset = dataset_base.copy({
+                'name': 'robocup_apple_test5 dataset',
+
+                # Training images and annotations
+                'train_images': './custom_dataset/robocup_apple_test5/',
+                'train_info':   './custom_dataset/robocup_apple_test5/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './custom_dataset/robocup_apple_test5/',
+                'valid_info':   './custom_dataset/robocup_apple_test5/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': robocup_apple_test5_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_robocup_apple_test5_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_robocup_apple_test5',
+
+                # Dataset stuff
+                'dataset': robocup_apple_test5_dataset,
+                'num_classes': len(robocup_apple_test5_dataset.class_names) + 1,
+            })
+# -----end robocup_apple_test5-----
+
+# -----start robocup_dataset-----
+robocup_dataset_CLASSES = ('apple',
+'blue_cup',
+'mustard',
+'strawberry',
+'tennis_ball',
+)
+robocup_dataset_dataset = dataset_base.copy({
+                'name': 'robocup_dataset dataset',
+
+                # Training images and annotations
+                'train_images': './custom_dataset/custom_datasets_kaida/train_data/',
+                'train_info':   './custom_dataset/custom_datasets_kaida/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './custom_dataset/custom_datasets_kaida/train_data/',
+                'valid_info':   './custom_dataset/custom_datasets_kaida/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': robocup_dataset_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_robocup_dataset_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_robocup_dataset',
+
+                # Dataset stuff
+                'dataset': robocup_dataset_dataset,
+                'num_classes': len(robocup_dataset_dataset.class_names) + 1,
+            })
+# -----end robocup_dataset-----
+# -----start custom_datasets_kaida-----
+custom_datasets_kaida_CLASSES = ()
+custom_datasets_kaida_dataset = dataset_base.copy({
+                'name': 'custom_datasets_kaida dataset',
+
+                # Training images and annotations
+                'train_images': './custom_datasets_kaida/',
+                'train_info':   './custom_datasets_kaida/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './custom_datasets_kaida/',
+                'valid_info':   './custom_datasets_kaida/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': custom_datasets_kaida_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_custom_datasets_kaida_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_custom_datasets_kaida',
+
+                # Dataset stuff
+                'dataset': custom_datasets_kaida_dataset,
+                'num_classes': len(custom_datasets_kaida_dataset.class_names) + 1,
+            })
+# -----end custom_datasets_kaida-----
+# -----start single_object_apple-----
+single_object_apple_CLASSES = ()
+single_object_apple_dataset = dataset_base.copy({
+                'name': 'single_object_apple dataset',
+
+                # Training images and annotations
+                'train_images': './single_object_apple/',
+                'train_info':   './single_object_apple/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './single_object_apple/',
+                'valid_info':   './single_object_apple/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': single_object_apple_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_single_object_apple_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_single_object_apple',
+
+                # Dataset stuff
+                'dataset': single_object_apple_dataset,
+                'num_classes': len(single_object_apple_dataset.class_names) + 1,
+            })
+# -----end single_object_apple-----
+
+# -----start velocity_test_dataset-----
+velocity_test_dataset_CLASSES = ('apple',
+)
+velocity_test_dataset_dataset = dataset_base.copy({
+                'name': 'velocity_test_dataset dataset',
+
+                # Training images and annotations
+                'train_images': './custom_dataset/velocity_test_dataset/train_data/',
+                'train_info':   './custom_dataset/velocity_test_dataset/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './custom_dataset/velocity_test_dataset/train_data/',
+                'valid_info':   './custom_dataset/velocity_test_dataset/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': velocity_test_dataset_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_velocity_test_dataset_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_velocity_test_dataset',
+
+                # Dataset stuff
+                'dataset': velocity_test_dataset_dataset,
+                'num_classes': len(velocity_test_dataset_dataset.class_names) + 1,
+            })
+# -----end velocity_test_dataset-----
+# -----start server_test-----
+server_test_CLASSES = ('apple',
+'banana',
+'blue_cup',
+'chips',
+'chocolate_jelly',
+'cleanser',
+'coffee_can',
+'cracker_box',
+'green_cup',
+'jasmin_tea_bottle',
+'mustard',
+'orange',
+'peach_can',
+'pear',
+'red_bowl',
+'red_cup',
+'red_plate',
+'spam',
+'sponge',
+'strawberry',
+'strawberry_jelly',
+'sugar_box',
+'tennis_ball',
+'tomato_can',
+'tuna_can',
+'water_pitcher',
+)
+server_test_dataset = dataset_base.copy({
+                'name': 'server_test dataset',
+
+                # Training images and annotations
+                'train_images': './custom_dataset/server_test/',
+                'train_info':   './custom_dataset/server_test/instances.json',
+
+                # Validation images and annotations.
+                'valid_images': './custom_dataset/server_test/',
+                'valid_info':   './custom_dataset/server_test/instances.json',
+
+                # Whether or not to load GT. If this is False, eval.py quantitative evaluation won't work.
+                'has_gt': True,
+
+                # A list of names for each of you classes.
+                'class_names': server_test_CLASSES,
+
+                # COCO class ids aren't sequential, so this is a bandage fix. If your ids aren't sequential,
+                # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
+                # If not specified, this just assumes category ids start at 1 and increase sequentially.
+                'label_map': None
+            })
+yolact_plus_server_test_config = yolact_plus_resnet50_config.copy({
+                'name': 'yolact_plus_server_test',
+
+                # Dataset stuff
+                'dataset': server_test_dataset,
+                'num_classes': len(server_test_dataset.class_names) + 1,
+            })
+# -----end server_test-----
