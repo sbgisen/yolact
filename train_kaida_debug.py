@@ -1,5 +1,5 @@
 from data import *
-from utils.augmentations import SSDAugmentation, BaseTransform
+from utils.augmentations_kaida_debug import SSDAugmentation, BaseTransform
 from utils.functions import MovingAverage, SavePath
 from utils.logger import Log
 from utils import timer
@@ -78,6 +78,8 @@ parser.add_argument('--batch_alloc', default=None, type=str,
                     help='If using multiple GPUS, you can set this to be a comma separated list detailing which GPUs should get what local batch size (It should add up to your total batch size).')
 parser.add_argument('--no_autoscale', dest='autoscale', action='store_false',
                     help='YOLACT will automatically scale the lr and the number of iterations depending on the batch size. Set this if you want to disable that.')
+parser.add_argument('--log_dir', default=None, type=str,
+                    help='Directory name to save log file to, example logs/[log_dir]/xxx.log')
 
 parser.set_defaults(keep_latest=False, log=True, log_gpu=False, interrupt=True, autoscale=True)
 args = parser.parse_args()
@@ -189,11 +191,17 @@ def train():
     net.train()
 
     if args.log:
-        print(cfg.name)
-        print(args._get_kwargs())
-        print(args.log_folder)
-        log = Log(cfg.name, args.log_folder, dict(args._get_kwargs()),
-            overwrite=(args.resume is None), log_gpu_stats=args.log_gpu)
+        dt_now = datetime.datetime.now()
+        # print(dt_now)
+        dt_now = dt_now.strftime('%Y-%m-%dT%H:%M')
+        # print(dt_now)
+        # log = Log(cfg.name, args.log_folder, dict(args._get_kwargs()),
+        if args.log_dir:
+            log = Log(cfg.name + "_" +  dt_now, args.log_folder + args.log_dir + "/", dict(args._get_kwargs()),
+                overwrite=(args.resume is None), log_gpu_stats=args.log_gpu)
+        else:
+            log = Log(cfg.name + "_" +  dt_now, args.log_folder, dict(args._get_kwargs()),
+                overwrite=(args.resume is None), log_gpu_stats=args.log_gpu)
 
     # I don't use the timer during training (I use a different timing method).
     # Apparently there's a race condition with multiple GPUs, so disable it just to be safe.
@@ -307,6 +315,7 @@ def train():
                 optimizer.zero_grad()
 
                 # Forward Pass + Compute loss at the same time (see CustomDataParallel and NetLoss)
+                # print(datum)
                 losses = net(datum)
                 
                 losses = { k: (v).mean() for k,v in losses.items() } # Mean here because Dataparallel
@@ -337,7 +346,6 @@ def train():
                     
                     total = sum([loss_avgs[k].get_avg() for k in losses])
                     loss_labels = sum([[k, loss_avgs[k].get_avg()] for k in loss_types if k in losses], [])
-                    
                     print(('[%3d] %7d ||' + (' %s: %.3f |' * len(losses)) + ' T: %.3f || ETA: %s || timer: %.3f')
                             % tuple([epoch, iteration] + loss_labels + [total, eta_str, elapsed]), flush=True)
 

@@ -12,6 +12,8 @@ import numpy as np
 
 # Because Python's package heierarchy system sucks
 if __name__ == '__main__':
+    print(sys.path)
+    sys.path.append("/home/yokochi/lib/yolact")
     from nvinfo import gpu_info, visible_gpus, nvsmi_available
     from functions import MovingAverage
 else:
@@ -188,6 +190,11 @@ class LogVisualizer():
 
     def _follow(self, entry:LogEntry, query:list):
         path, select = query
+        print("LOG-----CLASS:_follow-----type(path):",type(path), "-----type(select):", type(select))
+        print("LOG-----CLASS:_follow-----path:", path)
+        print("LOG-----CLASS:_follow-----select:", select)
+        print("LOG-----CLASS:_follow-----entry:", entry, " (type):", type(entry))
+        print("LOG-----CLASS:_follow-----entry._s:", entry._s, " (type):", type(entry._s))
 
         try:
             if select(entry, entry._s):
@@ -337,6 +344,7 @@ class LogVisualizer():
 
     def plot(self, entry_type:str, x:str, y:str, smoothness:int=0):
         """ Plot sequential log data. """
+        print("Plot::: param1 :",x , ", param2 : ", y)
 
         query_x = self._decode(x)
         query_y = self._decode(y)
@@ -352,6 +360,7 @@ class LogVisualizer():
 
             for datum in log:
                 val_x = self._follow(datum, query_x)
+                print("val_x", val_x)
                 val_y = self._follow(datum, query_y)
 
                 if val_x is not None and val_y is not None:
